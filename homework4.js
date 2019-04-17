@@ -1,7 +1,7 @@
 var camera,scene,geometry,material,mesh,renderer;
 var k = 1;
-var g = new THREE.Vector3(0,-98,0);
-var Fwind = new THREE.Vector3(0,10,0);
+var g = new THREE.Vector3(0,0,0);
+var Fwind = new THREE.Vector3(0,0,0);
 var Fair = new THREE.Vector3(0,0,0);
 var gridsize = 50;
 var particleSystem;
@@ -20,7 +20,8 @@ class StateVectorNodes {
 		this.x = new THREE.Vector3();
 		this.v = new THREE.Vector3();
 		this.a = new THREE.Vector3();
-		this.prevX = this.x;
+		this.prevX = new THREE.Vector3();
+		this.prevX.copy(this.x);
 		this.m = 1.0;
 		this.index = i;
 		this.radius = 1;
@@ -82,13 +83,14 @@ function computeForces(dt){
 		if(Springs[i].p1 != 0 && Springs[i].p1 != particleCount - 1){
 			let temp = Nodes[Springs[i].p1];
 			temp.v.add(springForce);
+			Nodes[Springs[i].p1] = temp;
 		}
 		if(Springs[i].p2 != 0 && Springs[i].p2 != particleCount - 1 ){
 			let temp = Nodes[Springs[i].p2];
 			temp.v.sub(springForce);
+			Nodes[Springs[i].p1] = temp;
 		}
 	}
-
 }
 function IntegrateVerlet(dt){
 	let deltaTime2Mass = (dt*dt)/ Nodes[0].m;
@@ -105,7 +107,9 @@ function IntegrateVerlet(dt){
 		//stoped
 		//newX = 2*Nodes[i].x - Nodes[i].prevX + deltaTime2Mass*Force;
 		
-		temp[i].copy(newX);
+		temp[i].x = newX.x;
+		temp[i].y = newX.y;
+		temp[i].z = newX.z
 		Nodes[i].x.copy(newX);
 		Nodes[i].prevX.copy(oldX);
 	}
